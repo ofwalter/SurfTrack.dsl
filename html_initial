@@ -1,5 +1,39 @@
-hello guy
-s
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SurfTrak</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Staatliches&display=swap');
+        h1 {
+            font-family: 'Staatliches', sans-serif;
+            font-size: 48px;
+            letter-spacing: 2px;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <ul>
+            <li><a href="/">Home</a></li>
+            <li><a href="/dashboard">Dashboard</a></li>
+            <li><a href="/log-session">Log Session</a></li>
+        </ul>
+    </nav>
 
+    <header>
+        <h1>SurfTrak</h1>
+        <p>Track your surf sessions and get notified when similar conditions arise.</p>
+    </header>
 
-welcom to surftrack
+    <section id="content">
+        {% block content %}{% endblock %}
+    </section>
+
+    <footer>
+        <p>&copy; 2025 SurfTrak</p>
+    </footer>
+</body>
+</html>

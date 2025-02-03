@@ -1,0 +1,72 @@
+#include <Wire.h>
+#include <Adafruit_MPU6050.h>
+#include <Adafruit_Sensor.h>
+#include <TinyGPSPlus.h>
+
+// Create objects for MPU-6050 and GPS
+Adafruit_MPU6050 mpu;
+TinyGPSPlus gps;
+
+// Initialize UART for GPS
+HardwareSerial GPSSerial(2); // Use UART2 for GPS (RX = D18, TX = D5)
+
+void setup() {
+  // Start the Serial Monitor
+  Serial.begin(115200);
+  while (!Serial);
+
+  // Initialize GPS Serial
+  GPSSerial.begin(9600, SERIAL_8N1, 18, 5); // RX = D18, TX = D5
+  Serial.println("GPS Serial initialized.");
+
+  // Initialize I2C with custom pins (SDA = D19, SCL = D21)
+  Wire.begin(19, 21);
+
+  // Initialize MPU-6050
+  if (!mpu.begin()) {
+    Serial.println("Failed to find MPU6050 sensor!");
+    while (1);
+  }
+  Serial.println("MPU6050 initialized successfully.");
+
+  // Configure MPU-6050 settings
+  mpu.setAccelerometerRange(MPU6050_RANGE_8_G);
+  mpu.setGyroRange(MPU6050_RANGE_500_DEG);
+  mpu.setFilterBandwidth(MPU6050_BAND_21_HZ);
+
+  // Print CSV headers
+  Serial.println("AccelX,AccelY,AccelZ,GyroX,GyroY,GyroZ,Latitude,Longitude,Altitude,Satellites");
+}
+
+void loop() {
+  // --- Read MPU-6050 Data ---
+  sensors_event_t a, g, temp;
+  mpu.getEvent(&a, &g, &temp);
+
+  // --- Read GPS Data ---
+  while (GPSSerial.available() > 0) {
+    char c = GPSSerial.read();
+    gps.encode(c);
+  }
+
+  // --- Output Data in CSV Format ---
+  Serial.print(a.acceleration.x); Serial.print(",");
+  Serial.print(a.acceleration.y); Serial.print(",");
+  Serial.print(a.acceleration.z); Serial.print(",");
+  Serial.print(g.gyro.x); Serial.print(",");
+  Serial.print(g.gyro.y); Serial.print(",");
+  Serial.print(g.gyro.z); Serial.print(",");
+
+  if (gps.location.isUpdated()) {
+    Serial.print(gps.location.lat(), 6); Serial.print(",");
+    Serial.print(gps.location.lng(), 6); Serial.print(",");
+    Serial.print(gps.altitude.meters()); Serial.print(",");
+    Serial.println(gps.satellites.value());
+  } else {
+    // Output placeholder values when GPS data is unavailable
+    Serial.print("NaN,NaN,NaN,0");
+    Serial.println();
+  }
+
+  delay(1000); // Adjust delay as needed for update frequency
+}
